@@ -33,12 +33,10 @@ body::after  { width: 480px; height: 480px; bottom: -200px; left: -140px; backgr
   box-shadow: 0 12px 40px rgba(17,42,92,0.12), inset 0 1px 0 rgba(255,255,255,0.6) !important;
 }
 
-/* ─── Контент — чёткий и непрозрачный (без блюра) ─── */
-.ant-card {
-  background: #ffffff !important;
-  border: 1px solid rgba(16,27,45,0.06) !important;
-  box-shadow: 0 8px 26px rgba(17,42,92,0.07) !important;
-}
+/* ─── Контент — чёткий и непрозрачный ───
+   Фон НЕ трогаем: обычные карточки и так белые (AntD), а градиентные баннеры
+   сохраняют свой inline-фон и белый текст остаётся видимым. */
+.ant-card { box-shadow: 0 8px 26px rgba(17,42,92,0.07) !important; }
 .ant-card-hoverable:hover { box-shadow: 0 16px 44px rgba(17,42,92,0.14) !important; transform: translateY(-2px); }
 .ant-card, .ant-card-hoverable { transition: box-shadow .2s ease, transform .2s ease; }
 
