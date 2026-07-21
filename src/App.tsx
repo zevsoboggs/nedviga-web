@@ -18,6 +18,7 @@ import {
   AppstoreOutlined,
   NotificationOutlined,
   UsergroupAddOutlined,
+  WalletOutlined,
 } from '@ant-design/icons';
 
 import { dataProvider } from './providers/dataProvider';
@@ -36,6 +37,7 @@ import { ServicesPage, ServiceDetailPage } from './pages/services';
 import { BroadcastList } from './pages/broadcasts';
 import { NotificationsPage } from './pages/notifications';
 import { SettingsPage } from './pages/settings';
+import { CashboxPage } from './pages/cashbox';
 
 export function App() {
   return (
@@ -64,6 +66,7 @@ export function App() {
             meta: { label: 'Клиенты', icon: <TeamOutlined /> },
           },
           { name: 'deals', list: '/deals', meta: { label: 'Сделки', icon: <FundProjectionScreenOutlined /> } },
+          { name: 'cashbox', list: '/cashbox', meta: { label: 'Касса', icon: <WalletOutlined /> } },
           { name: 'tasks', list: '/tasks', meta: { label: 'Задачи', icon: <CheckSquareOutlined /> } },
           { name: 'calendar', list: '/calendar', meta: { label: 'Календарь', icon: <CalendarOutlined /> } },
           { name: 'ai', list: '/ai', meta: { label: 'AI-ассистент', icon: <RobotOutlined /> } },
@@ -97,6 +100,7 @@ export function App() {
               <Route path="show/:id" element={<ClientShow />} />
             </Route>
             <Route path="/deals" element={<DealList />} />
+            <Route path="/cashbox" element={<CashboxPage />} />
             <Route path="/tasks" element={<TaskList />} />
             <Route path="/calendar" element={<CalendarPage />} />
             <Route path="/ai" element={<AiPage />} />

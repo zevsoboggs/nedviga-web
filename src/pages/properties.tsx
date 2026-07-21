@@ -12,8 +12,9 @@ import {
   useForm,
 } from '@refinedev/antd';
 import { useShow } from '@refinedev/core';
-import { App, Button, Table, Space, Tag, Form, Input, InputNumber, Modal, Select, Row, Col, Descriptions, Image, Upload } from 'antd';
-import { DownloadOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import { App, Button, Table, Space, Tag, Form, Input, InputNumber, Modal, Select, Row, Col, Descriptions, Image, Divider } from 'antd';
+import { DownloadOutlined, PlusOutlined, DeleteOutlined, ApartmentOutlined, FundProjectionScreenOutlined } from '@ant-design/icons';
 import { apiFetch } from '../api';
 const fmt = (v?: number | null) => (v == null ? '—' : new Intl.NumberFormat('ru-RU').format(v) + ' ₸');
 
@@ -77,6 +78,20 @@ export function PropertyList() {
         <Input placeholder="https://krisha.kz/a/show/..." value={url} onChange={(e) => setUrl(e.target.value)} onPressEnter={doImport} />
       </Modal>
       <Table {...tableProps} rowKey="id">
+        <Table.Column
+          title=""
+          dataIndex="photos"
+          width={72}
+          render={(photos: string[]) =>
+            photos?.[0] ? (
+              <img src={photos[0]} alt="" style={{ width: 56, height: 42, objectFit: 'cover', borderRadius: 8 }} />
+            ) : (
+              <div style={{ width: 56, height: 42, borderRadius: 8, background: '#EEF3FB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <ApartmentOutlined style={{ color: '#98A5B8' }} />
+              </div>
+            )
+          }
+        />
         <Table.Column dataIndex="title" title="Название" ellipsis />
         <Table.Column dataIndex="type" title="Тип" render={(v) => label(TYPE, v)} />
         <Table.Column dataIndex="dealKind" title="Сделка" render={(v) => label(DEAL, v)} />
@@ -192,8 +207,33 @@ export function PropertyEdit() {
 export function PropertyShow() {
   const { queryResult } = useShow();
   const { message } = App.useApp();
+  const navigate = useNavigate();
   const r: any = queryResult?.data?.data;
   const [uploading, setUploading] = useState(false);
+  const [dealOpen, setDealOpen] = useState(false);
+  const [dealBusy, setDealBusy] = useState(false);
+  const [dealForm] = Form.useForm();
+
+  const createDeal = async () => {
+    const v = await dealForm.validateFields();
+    setDealBusy(true);
+    try {
+      await apiFetch('POST', '/deals/from-property', {
+        propertyId: r.id,
+        amount: v.amount,
+        newClient: { firstName: v.clientName, phone: v.clientPhone },
+        deposit: v.deposit ? { amount: v.deposit, method: v.method } : undefined,
+      });
+      message.success(v.deposit ? `Сделка создана, задаток ${v.deposit} ₸ в кассе` : 'Сделка создана');
+      setDealOpen(false);
+      dealForm.resetFields();
+      navigate('/deals');
+    } catch (e: any) {
+      message.error(e?.message ?? 'Ошибка');
+    } finally {
+      setDealBusy(false);
+    }
+  };
 
   const addPhotos = () => {
     const inp = document.createElement('input');
@@ -226,7 +266,37 @@ export function PropertyShow() {
   };
 
   return (
-    <Show isLoading={queryResult?.isLoading} title={r?.title}>
+    <Show
+      isLoading={queryResult?.isLoading}
+      title={r?.title}
+      headerButtons={({ defaultButtons }) => (
+        <>
+          <Button type="primary" icon={<FundProjectionScreenOutlined />} onClick={() => { dealForm.setFieldValue('amount', r?.price); setDealOpen(true); }}>
+            Создать сделку
+          </Button>
+          {defaultButtons}
+        </>
+      )}
+    >
+      <Modal open={dealOpen} onOk={createDeal} confirmLoading={dealBusy} onCancel={() => setDealOpen(false)} title="Новая сделка с объекта" okText="Создать сделку" cancelText="Отмена">
+        <Form form={dealForm} layout="vertical">
+          <Row gutter={12}>
+            <Col span={14}><Form.Item name="clientName" label="Клиент (ФИО)" rules={[{ required: true }]}><Input placeholder="Имя Фамилия" /></Form.Item></Col>
+            <Col span={10}><Form.Item name="clientPhone" label="Телефон"><Input placeholder="+7 …" /></Form.Item></Col>
+          </Row>
+          <Form.Item name="amount" label="Сумма сделки, ₸"><InputNumber style={{ width: '100%' }} min={0} /></Form.Item>
+          <Divider style={{ margin: '8px 0' }}>Задаток (в кассу) — необязательно</Divider>
+          <Row gutter={12}>
+            <Col span={14}><Form.Item name="deposit" label="Сумма задатка, ₸"><InputNumber style={{ width: '100%' }} min={0} placeholder="напр. 500 000" /></Form.Item></Col>
+            <Col span={10}>
+              <Form.Item name="method" label="Способ" initialValue="CASH">
+                <Select options={[{ value: 'CASH', label: 'Наличные' }, { value: 'CARD', label: 'Карта' }, { value: 'TRANSFER', label: 'Перевод' }, { value: 'KASPI', label: 'Kaspi' }]} />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </Modal>
+
       <Space wrap style={{ marginBottom: 16 }}>
         <Image.PreviewGroup>
           {(r?.photos ?? []).map((u: string, i: number) => (
