@@ -24,6 +24,7 @@ import {
 import { dataProvider } from './providers/dataProvider';
 import { authProvider } from './providers/authProvider';
 import { Layout } from './components/Layout';
+import { MaintenanceGate } from './components/MaintenanceGate';
 import { Login } from './pages/login';
 import { Dashboard } from './pages/dashboard';
 import { PropertyList, PropertyCreate, PropertyEdit, PropertyShow } from './pages/properties';
@@ -80,9 +81,11 @@ export function App() {
           <Route
             element={
               <Authenticated key="protected" fallback={<CatchAllNavigate to="/login" />}>
-                <Layout>
-                  <Outlet />
-                </Layout>
+                <MaintenanceGate>
+                  <Layout>
+                    <Outlet />
+                  </Layout>
+                </MaintenanceGate>
               </Authenticated>
             }
           >
