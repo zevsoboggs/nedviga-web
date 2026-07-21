@@ -32,6 +32,15 @@ const STAGE: Record<string, string> = {
   LEAD: 'Заявка', QUALIFIED: 'Квалиф.', VIEWING: 'Показ', OFFER: 'Оферта', CONTRACT: 'Договор', CLOSED_WON: 'Успех', CLOSED_LOST: 'Отказ',
 };
 const COLORS = ['#3B6EF2', '#2E90FA', '#12B76A', '#F79009', '#7A5AF8', '#16B364', '#F04438'];
+const ACT_ACTION: Record<string, string> = {
+  created: 'создал(а)', updated: 'обновил(а)', deleted: 'удалил(а)', imported: 'импортировал(а)',
+  stage_changed: 'сменил(а) стадию', status_changed: 'сменил(а) статус', payment: 'провёл(а) платёж',
+  joined: 'присоединился(ась)', closed_won: 'закрыл(а) успешно',
+};
+const ACT_ENTITY: Record<string, string> = {
+  deal: 'сделку', property: 'объект', client: 'клиента', task: 'задачу', user: 'сотрудника', payment: 'платёж', event: 'событие',
+};
+const actText = (action: string, entity: string) => `${ACT_ACTION[action] ?? action}${ACT_ENTITY[entity] ? ' ' + ACT_ENTITY[entity] : ''}`;
 
 const SLIDES = [
   { img: slideAnalytics, title: 'Аналитика в реальном времени', sub: 'Метрики, воронка и касса на одном экране', colors: ['#5A93FF', '#3B6EF2'] },
@@ -166,7 +175,7 @@ export function Dashboard() {
               dataSource={data?.recentActivity ?? []}
               locale={{ emptyText: 'Нет действий' }}
               renderItem={(a: any) => (
-                <List.Item><List.Item.Meta title={`${a.user?.firstName ?? 'Система'} · ${a.action}`} description={`${a.entityType} · ${new Date(a.createdAt).toLocaleString('ru-RU')}`} /></List.Item>
+                <List.Item><List.Item.Meta title={`${a.user?.firstName ?? 'Система'} ${actText(a.action, a.entityType)}`} description={new Date(a.createdAt).toLocaleString('ru-RU')} /></List.Item>
               )}
             />
           </Card>

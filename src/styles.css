@@ -21,3 +21,23 @@ body {
   box-shadow: 0 12px 40px rgba(17,42,92,0.10);
 }
 .nv-menu-item-active { position: relative; }
+
+/* Премиальный лоск */
+.ant-card {
+  box-shadow: 0 6px 24px rgba(17, 42, 92, 0.06) !important;
+  border-color: rgba(16, 27, 45, 0.06) !important;
+}
+.ant-card-hoverable:hover { box-shadow: 0 14px 40px rgba(17, 42, 92, 0.14) !important; transform: translateY(-2px); }
+.ant-card, .ant-card-hoverable { transition: box-shadow .2s ease, transform .2s ease; }
+.ant-table-thead > tr > th {
+  background: #F6F8FC !important;
+  font-weight: 700 !important;
+  color: #5A6B85 !important;
+}
+.ant-table-tbody > tr:hover > td { background: #F3F7FF !important; }
+.ant-menu-item { border-radius: 12px !important; height: 44px !important; line-height: 44px !important; margin: 4px 0 !important; }
+.ant-menu-item-selected { font-weight: 700; }
+.ant-btn-primary { box-shadow: 0 6px 16px rgba(59, 110, 242, 0.28); }
+.ant-carousel .slick-dots li button { background: rgba(255,255,255,0.6) !important; }
+.ant-carousel .slick-dots li.slick-active button { background: #fff !important; }
+.ant-statistic-content { font-weight: 800; }

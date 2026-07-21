@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useGetIdentity, useLogout } from '@refinedev/core';
-import { App, Avatar, Button, Card, Col, Descriptions, Form, Input, Row, Space, Switch, Tag, Typography } from 'antd';
+import { App, Avatar, Button, Card, Col, Descriptions, Form, Input, InputNumber, Row, Space, Switch, Tag, Typography } from 'antd';
 import { LogoutOutlined, ToolOutlined, UserOutlined, ShopOutlined } from '@ant-design/icons';
 import { apiFetch } from '../api';
 
@@ -22,7 +22,7 @@ export function SettingsPage() {
     load();
     apiFetch<{ user: any }>('GET', '/auth/me').then((r) => {
       setAgency(r.user?.agency);
-      form.setFieldsValue({ name: r.user?.agency?.name, city: r.user?.agency?.city });
+      form.setFieldsValue({ name: r.user?.agency?.name, city: r.user?.agency?.city, commissionRate: r.user?.agency?.commissionRate ?? 3 });
     }).catch(() => {});
   }, []);
 
@@ -71,6 +71,9 @@ export function SettingsPage() {
             <Form form={form} layout="vertical">
               <Form.Item name="name" label="Название" rules={[{ required: true }]}><Input placeholder="Моё агентство" /></Form.Item>
               <Form.Item name="city" label="Город" rules={[{ required: true }]}><Input placeholder="Алматы" /></Form.Item>
+              <Form.Item name="commissionRate" label="Комиссия агентства, % (при успешной сделке)">
+                <InputNumber style={{ width: '100%' }} min={0} max={100} step={0.5} />
+              </Form.Item>
               <Button type="primary" loading={agencyBusy} onClick={saveAgency}>Сохранить</Button>
             </Form>
           </Card>
