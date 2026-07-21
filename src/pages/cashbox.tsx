@@ -44,17 +44,17 @@ export function CashboxPage() {
     <div>
       <Row gutter={16} style={{ marginBottom: 16 }}>
         <Col xs={24} md={8}>
-          <Card>
+          <Card loading={loading}>
             <Statistic title="Баланс кассы" value={s.balance ?? 0} suffix="₸" prefix={<WalletOutlined />} valueStyle={{ color: '#3B6EF2' }} groupSeparator=" " />
           </Card>
         </Col>
         <Col xs={12} md={8}>
-          <Card>
+          <Card loading={loading}>
             <Statistic title="Приход" value={s.totalIn ?? 0} suffix="₸" prefix={<ArrowUpOutlined />} valueStyle={{ color: '#12B76A' }} groupSeparator=" " />
           </Card>
         </Col>
         <Col xs={12} md={8}>
-          <Card>
+          <Card loading={loading}>
             <Statistic title="Расход" value={s.totalOut ?? 0} suffix="₸" prefix={<ArrowDownOutlined />} valueStyle={{ color: '#F04438' }} groupSeparator=" " />
           </Card>
         </Col>

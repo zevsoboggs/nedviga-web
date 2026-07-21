@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useGetIdentity } from '@refinedev/core';
-import { Card, Carousel, Col, List, Row, Spin, Tag, Typography } from 'antd';
+import { Card, Carousel, Col, List, Row, Skeleton, Tag, Typography } from 'antd';
 import {
   TeamOutlined,
   ApartmentOutlined,
@@ -61,7 +61,25 @@ export function Dashboard() {
     ]).finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <Spin size="large" style={{ display: 'block', margin: '80px auto' }} />;
+  if (loading)
+    return (
+      <div>
+        <Skeleton.Node active style={{ width: '100%', height: 190, borderRadius: 20 }}><span /></Skeleton.Node>
+        <Row gutter={[16, 16]} style={{ marginTop: 20 }}>
+          {[0, 1, 2, 3].map((i) => (
+            <Col xs={12} md={6} key={i}><Card><Skeleton active paragraph={{ rows: 1 }} /></Card></Col>
+          ))}
+        </Row>
+        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+          <Col xs={24} md={12}><Card><Skeleton active paragraph={{ rows: 2 }} /></Card></Col>
+          <Col xs={24} md={12}><Card><Skeleton active paragraph={{ rows: 2 }} /></Card></Col>
+        </Row>
+        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+          <Col xs={24} lg={14}><Card><Skeleton.Node active style={{ width: '100%', height: 240 }}><span /></Skeleton.Node></Card></Col>
+          <Col xs={24} lg={10}><Card><Skeleton.Node active style={{ width: '100%', height: 240 }}><span /></Skeleton.Node></Card></Col>
+        </Row>
+      </div>
+    );
 
   const m = data?.metrics ?? {};
   const pipeline = (data?.pipeline ?? []).map((p: any) => ({ stage: STAGE[p.stage] ?? p.stage, count: p._count, amount: p._sum?.amount ?? 0 }));

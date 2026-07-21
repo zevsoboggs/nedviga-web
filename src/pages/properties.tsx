@@ -13,7 +13,7 @@ import {
 } from '@refinedev/antd';
 import { useShow } from '@refinedev/core';
 import { useNavigate } from 'react-router-dom';
-import { App, Button, Table, Space, Tag, Form, Input, InputNumber, Modal, Select, Row, Col, Descriptions, Image, Divider } from 'antd';
+import { App, Button, Table, Space, Tag, Form, Input, InputNumber, Modal, Segmented, Select, Row, Col, Descriptions, Image, Divider } from 'antd';
 import { DownloadOutlined, PlusOutlined, DeleteOutlined, ApartmentOutlined, FundProjectionScreenOutlined } from '@ant-design/icons';
 import { apiFetch } from '../api';
 const fmt = (v?: number | null) => (v == null ? '—' : new Intl.NumberFormat('ru-RU').format(v) + ' ₸');
@@ -47,6 +47,9 @@ export function PropertyList() {
   const [importOpen, setImportOpen] = useState(false);
   const [url, setUrl] = useState('');
   const [busy, setBusy] = useState(false);
+  const [archived, setArchived] = useState(false);
+  const ARCHIVE = ['SOLD', 'RENTED', 'ARCHIVED'];
+  const rows = ((tableProps.dataSource as any[]) ?? []).filter((r) => (archived ? ARCHIVE.includes(r.status) : !ARCHIVE.includes(r.status)));
 
   const doImport = async () => {
     if (!url.trim()) return;
@@ -77,7 +80,16 @@ export function PropertyList() {
         <p style={{ color: '#64748B' }}>Вставьте ссылку на объявление — цена, площадь, этаж, район и фото подтянутся автоматически.</p>
         <Input placeholder="https://krisha.kz/a/show/..." value={url} onChange={(e) => setUrl(e.target.value)} onPressEnter={doImport} />
       </Modal>
-      <Table {...tableProps} rowKey="id">
+      <Segmented
+        style={{ marginBottom: 16 }}
+        value={archived ? 'archive' : 'active'}
+        onChange={(v) => setArchived(v === 'archive')}
+        options={[
+          { label: 'Активные', value: 'active' },
+          { label: 'Архив (продано/сдано)', value: 'archive' },
+        ]}
+      />
+      <Table {...tableProps} dataSource={rows} rowKey="id">
         <Table.Column
           title=""
           dataIndex="photos"
