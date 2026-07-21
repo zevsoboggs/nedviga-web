@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useGetIdentity, useLogout } from '@refinedev/core';
-import { App, Avatar, Button, Card, Col, Descriptions, Row, Space, Switch, Tag, Typography } from 'antd';
-import { LogoutOutlined, ToolOutlined, UserOutlined } from '@ant-design/icons';
+import { App, Avatar, Button, Card, Col, Descriptions, Form, Input, Row, Space, Switch, Tag, Typography } from 'antd';
+import { LogoutOutlined, ToolOutlined, UserOutlined, ShopOutlined } from '@ant-design/icons';
 import { apiFetch } from '../api';
 
 const { Text } = Typography;
@@ -12,9 +12,32 @@ export function SettingsPage() {
   const { message } = App.useApp();
   const [status, setStatus] = useState<any>(null);
   const [busy, setBusy] = useState(false);
+  const [agency, setAgency] = useState<any>(null);
+  const [agencyBusy, setAgencyBusy] = useState(false);
+  const [form] = Form.useForm();
+  const isAdmin = identity?.role === 'OWNER' || identity?.role === 'ADMIN';
 
   const load = () => apiFetch('GET', '/system/status').then(setStatus).catch(() => {});
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    apiFetch<{ user: any }>('GET', '/auth/me').then((r) => {
+      setAgency(r.user?.agency);
+      form.setFieldsValue({ name: r.user?.agency?.name, city: r.user?.agency?.city });
+    }).catch(() => {});
+  }, []);
+
+  const saveAgency = async () => {
+    const v = await form.validateFields();
+    setAgencyBusy(true);
+    try {
+      await apiFetch('PATCH', '/agency', v);
+      message.success('Агентство обновлено');
+    } catch (e: any) {
+      message.error(e?.message ?? 'Ошибка');
+    } finally {
+      setAgencyBusy(false);
+    }
+  };
 
   const toggle = async (on: boolean) => {
     setBusy(true);
@@ -42,6 +65,17 @@ export function SettingsPage() {
           <Button danger block icon={<LogoutOutlined />} style={{ marginTop: 20 }} onClick={() => logout()}>Выйти</Button>
         </Card>
       </Col>
+      {isAdmin && (
+        <Col xs={24} md={12}>
+          <Card title={<Space><ShopOutlined /> Агентство</Space>} style={{ marginBottom: 16 }}>
+            <Form form={form} layout="vertical">
+              <Form.Item name="name" label="Название" rules={[{ required: true }]}><Input placeholder="Моё агентство" /></Form.Item>
+              <Form.Item name="city" label="Город" rules={[{ required: true }]}><Input placeholder="Алматы" /></Form.Item>
+              <Button type="primary" loading={agencyBusy} onClick={saveAgency}>Сохранить</Button>
+            </Form>
+          </Card>
+        </Col>
+      )}
       <Col xs={24} md={12}>
         <Card title="Система">
           <Descriptions column={1} size="small">
