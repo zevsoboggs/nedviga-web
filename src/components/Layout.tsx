@@ -75,7 +75,7 @@ export function Layout({ children }: { children: ReactNode }) {
           />
         </div>
 
-        <div style={{ borderTop: '1px solid rgba(16,27,45,0.06)', padding: collapsed ? 10 : '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ borderTop: '1px solid rgba(16,27,45,0.06)', padding: collapsed ? 10 : '12px 14px', display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-start', gap: 10 }}>
           <Avatar src={identity?.avatar} icon={<UserOutlined />} style={{ background: '#3B6EF2' }} />
           {!collapsed && (
             <div style={{ flex: 1, minWidth: 0 }}>
