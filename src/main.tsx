@@ -5,6 +5,7 @@ import ruRU from 'antd/locale/ru_RU';
 import { nedvigaTheme } from './theme';
 import { App } from './App';
 import 'antd/dist/reset.css';
+import './styles.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

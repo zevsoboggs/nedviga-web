@@ -1,10 +1,5 @@
 import { Refine, Authenticated } from '@refinedev/core';
-import {
-  ThemedLayoutV2,
-  ThemedTitleV2,
-  ErrorComponent,
-  useNotificationProvider,
-} from '@refinedev/antd';
+import { ErrorComponent, useNotificationProvider } from '@refinedev/antd';
 import routerBindings, {
   NavigateToResource,
   CatchAllNavigate,
@@ -13,26 +8,34 @@ import routerBindings, {
 } from '@refinedev/react-router-v6';
 import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
 import {
-  HomeOutlined,
+  DashboardOutlined,
   ApartmentOutlined,
   TeamOutlined,
   FundProjectionScreenOutlined,
+  CheckSquareOutlined,
+  CalendarOutlined,
+  RobotOutlined,
+  AppstoreOutlined,
+  NotificationOutlined,
   UsergroupAddOutlined,
 } from '@ant-design/icons';
-import '@refinedev/antd/dist/reset.css';
 
 import { dataProvider } from './providers/dataProvider';
 import { authProvider } from './providers/authProvider';
+import { Layout } from './components/Layout';
 import { Login } from './pages/login';
 import { Dashboard } from './pages/dashboard';
 import { PropertyList, PropertyCreate, PropertyEdit, PropertyShow } from './pages/properties';
 import { ClientList, ClientCreate, ClientEdit, ClientShow } from './pages/clients';
 import { DealList } from './pages/deals';
 import { StaffList } from './pages/staff';
-
-const Title = (props: any) => (
-  <ThemedTitleV2 {...props} text="Nedviga.CRM" icon={<span style={{ fontSize: 20 }}>🏠</span>} />
-);
+import { TaskList } from './pages/tasks';
+import { CalendarPage } from './pages/calendar';
+import { AiPage } from './pages/ai';
+import { ServicesPage, ServiceDetailPage } from './pages/services';
+import { BroadcastList } from './pages/broadcasts';
+import { NotificationsPage } from './pages/notifications';
+import { SettingsPage } from './pages/settings';
 
 export function App() {
   return (
@@ -43,7 +46,7 @@ export function App() {
         routerProvider={routerBindings}
         notificationProvider={useNotificationProvider}
         resources={[
-          { name: 'dashboard', list: '/', meta: { label: 'Обзор', icon: <HomeOutlined /> } },
+          { name: 'dashboard', list: '/', meta: { label: 'Обзор', icon: <DashboardOutlined /> } },
           {
             name: 'properties',
             list: '/properties',
@@ -61,6 +64,11 @@ export function App() {
             meta: { label: 'Клиенты', icon: <TeamOutlined /> },
           },
           { name: 'deals', list: '/deals', meta: { label: 'Сделки', icon: <FundProjectionScreenOutlined /> } },
+          { name: 'tasks', list: '/tasks', meta: { label: 'Задачи', icon: <CheckSquareOutlined /> } },
+          { name: 'calendar', list: '/calendar', meta: { label: 'Календарь', icon: <CalendarOutlined /> } },
+          { name: 'ai', list: '/ai', meta: { label: 'AI-ассистент', icon: <RobotOutlined /> } },
+          { name: 'services', list: '/services', meta: { label: 'Сервисы', icon: <AppstoreOutlined /> } },
+          { name: 'broadcasts', list: '/broadcasts', meta: { label: 'Рассылки', icon: <NotificationOutlined /> } },
           { name: 'staff', list: '/staff', meta: { label: 'Сотрудники', icon: <UsergroupAddOutlined /> } },
         ]}
         options={{ syncWithLocation: true, warnWhenUnsavedChanges: true }}
@@ -69,9 +77,9 @@ export function App() {
           <Route
             element={
               <Authenticated key="protected" fallback={<CatchAllNavigate to="/login" />}>
-                <ThemedLayoutV2 Title={Title}>
+                <Layout>
                   <Outlet />
-                </ThemedLayoutV2>
+                </Layout>
               </Authenticated>
             }
           >
@@ -89,7 +97,17 @@ export function App() {
               <Route path="show/:id" element={<ClientShow />} />
             </Route>
             <Route path="/deals" element={<DealList />} />
+            <Route path="/tasks" element={<TaskList />} />
+            <Route path="/calendar" element={<CalendarPage />} />
+            <Route path="/ai" element={<AiPage />} />
+            <Route path="/services">
+              <Route index element={<ServicesPage />} />
+              <Route path=":id" element={<ServiceDetailPage />} />
+            </Route>
+            <Route path="/broadcasts" element={<BroadcastList />} />
             <Route path="/staff" element={<StaffList />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
             <Route path="*" element={<ErrorComponent />} />
           </Route>
 

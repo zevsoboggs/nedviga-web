@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   List,
   useTable,
@@ -11,9 +12,9 @@ import {
   useForm,
 } from '@refinedev/antd';
 import { useShow } from '@refinedev/core';
-import { Table, Space, Tag, Form, Input, InputNumber, Select, Row, Col, Typography, Descriptions, Image } from 'antd';
-
-const { Title } = Typography;
+import { App, Button, Table, Space, Tag, Form, Input, InputNumber, Modal, Select, Row, Col, Descriptions, Image, Upload } from 'antd';
+import { DownloadOutlined, PlusOutlined, DeleteOutlined } from '@ant-design/icons';
+import { apiFetch } from '../api';
 const fmt = (v?: number | null) => (v == null ? '—' : new Intl.NumberFormat('ru-RU').format(v) + ' ₸');
 
 const TYPE = [
@@ -40,9 +41,41 @@ const STATUS = [
 const label = (arr: { value: string; label: string }[], v: string) => arr.find((x) => x.value === v)?.label ?? v;
 
 export function PropertyList() {
-  const { tableProps } = useTable({ resource: 'properties', pagination: { mode: 'client', pageSize: 10 } });
+  const { tableProps, tableQueryResult } = useTable({ resource: 'properties', pagination: { mode: 'client', pageSize: 10 } });
+  const { message } = App.useApp();
+  const [importOpen, setImportOpen] = useState(false);
+  const [url, setUrl] = useState('');
+  const [busy, setBusy] = useState(false);
+
+  const doImport = async () => {
+    if (!url.trim()) return;
+    setBusy(true);
+    try {
+      await apiFetch('POST', '/properties/import', { url: url.trim() });
+      message.success('Объект импортирован');
+      setImportOpen(false);
+      setUrl('');
+      tableQueryResult?.refetch();
+    } catch (e: any) {
+      message.error(e?.message ?? 'Не удалось импортировать');
+    } finally {
+      setBusy(false);
+    }
+  };
+
   return (
-    <List headerButtons={<CreateButton>Добавить объект</CreateButton>}>
+    <List
+      headerButtons={
+        <Space>
+          <Button icon={<DownloadOutlined />} onClick={() => setImportOpen(true)}>Импорт с krisha.kz</Button>
+          <CreateButton>Добавить объект</CreateButton>
+        </Space>
+      }
+    >
+      <Modal open={importOpen} onOk={doImport} confirmLoading={busy} onCancel={() => setImportOpen(false)} title="Импорт объекта с krisha.kz" okText="Импортировать" cancelText="Отмена">
+        <p style={{ color: '#64748B' }}>Вставьте ссылку на объявление — цена, площадь, этаж, район и фото подтянутся автоматически.</p>
+        <Input placeholder="https://krisha.kz/a/show/..." value={url} onChange={(e) => setUrl(e.target.value)} onPressEnter={doImport} />
+      </Modal>
       <Table {...tableProps} rowKey="id">
         <Table.Column dataIndex="title" title="Название" ellipsis />
         <Table.Column dataIndex="type" title="Тип" render={(v) => label(TYPE, v)} />
@@ -158,18 +191,67 @@ export function PropertyEdit() {
 
 export function PropertyShow() {
   const { queryResult } = useShow();
+  const { message } = App.useApp();
   const r: any = queryResult?.data?.data;
+  const [uploading, setUploading] = useState(false);
+
+  const addPhotos = () => {
+    const inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = 'image/*';
+    inp.multiple = true;
+    inp.onchange = async () => {
+      const files = Array.from(inp.files ?? []);
+      if (!files.length) return;
+      setUploading(true);
+      try {
+        const dataUrls = await Promise.all(
+          files.slice(0, 8).map(
+            (f) => new Promise<string>((res, rej) => { const rd = new FileReader(); rd.onload = () => res(String(rd.result)); rd.onerror = rej; rd.readAsDataURL(f); }),
+          ),
+        );
+        await apiFetch('PATCH', `/properties/${r.id}`, { photos: [...(r.photos ?? []), ...dataUrls].slice(0, 12) });
+        message.success('Фото добавлены');
+        queryResult?.refetch();
+      } finally {
+        setUploading(false);
+      }
+    };
+    inp.click();
+  };
+
+  const removePhoto = async (idx: number) => {
+    await apiFetch('PATCH', `/properties/${r.id}`, { photos: (r.photos ?? []).filter((_: any, i: number) => i !== idx) });
+    queryResult?.refetch();
+  };
+
   return (
     <Show isLoading={queryResult?.isLoading} title={r?.title}>
-      {r?.photos?.length ? (
+      <Space wrap style={{ marginBottom: 16 }}>
         <Image.PreviewGroup>
-          <Space wrap style={{ marginBottom: 16 }}>
-            {r.photos.map((u: string, i: number) => (
-              <Image key={i} src={u} width={160} height={120} style={{ objectFit: 'cover', borderRadius: 8 }} />
-            ))}
-          </Space>
+          {(r?.photos ?? []).map((u: string, i: number) => (
+            <div key={i} style={{ position: 'relative', display: 'inline-block' }}>
+              <Image src={u} width={160} height={120} style={{ objectFit: 'cover', borderRadius: 8 }} />
+              <Button
+                size="small"
+                danger
+                shape="circle"
+                icon={<DeleteOutlined />}
+                style={{ position: 'absolute', top: 4, right: 4 }}
+                onClick={() => removePhoto(i)}
+              />
+            </div>
+          ))}
         </Image.PreviewGroup>
-      ) : null}
+        <Button
+          onClick={addPhotos}
+          loading={uploading}
+          icon={<PlusOutlined />}
+          style={{ width: 160, height: 120, borderStyle: 'dashed' }}
+        >
+          Фото
+        </Button>
+      </Space>
       <Descriptions bordered column={2} size="middle">
         <Descriptions.Item label="Цена">{fmt(r?.price)}</Descriptions.Item>
         <Descriptions.Item label="Тип">{label(TYPE, r?.type)}</Descriptions.Item>

@@ -1,6 +1,7 @@
 import { useLogin } from '@refinedev/core';
 import { Button, Card, Form, Input, Typography } from 'antd';
 import { LockOutlined, MailOutlined } from '@ant-design/icons';
+import logo from '../assets/logo.png';
 
 const { Title, Text } = Typography;
 
@@ -20,8 +21,8 @@ export function Login() {
     >
       <Card style={{ width: 400, maxWidth: '100%', boxShadow: '0 20px 60px rgba(20,40,90,0.25)' }} bordered={false}>
         <div style={{ textAlign: 'center', marginBottom: 20 }}>
-          <div style={{ fontSize: 44 }}>🏠</div>
-          <Title level={3} style={{ margin: '8px 0 0' }}>
+          <img src={logo} alt="Nedviga" style={{ width: 72, height: 72 }} />
+          <Title level={3} style={{ margin: '10px 0 0' }}>
             Nedviga.CRM
           </Title>
           <Text type="secondary">Веб-версия · вход для сотрудников</Text>
