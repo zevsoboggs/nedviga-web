@@ -10,6 +10,7 @@ const TYPE: Record<string, { label: string; color: string; out?: boolean }> = {
   DEPOSIT: { label: 'Задаток', color: 'blue' },
   PAYMENT: { label: 'Оплата', color: 'green' },
   COMMISSION: { label: 'Комиссия', color: 'geekblue' },
+  PAYOUT: { label: 'Выплата продавцу', color: 'purple', out: true },
   REFUND: { label: 'Возврат', color: 'red', out: true },
   EXPENSE: { label: 'Расход', color: 'volcano', out: true },
 };
