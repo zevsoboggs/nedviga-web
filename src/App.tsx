@@ -23,6 +23,7 @@ import {
 
 import { dataProvider } from './providers/dataProvider';
 import { authProvider } from './providers/authProvider';
+import { i18nProvider } from './providers/i18n';
 import { Layout } from './components/Layout';
 import { MaintenanceGate } from './components/MaintenanceGate';
 import { Login } from './pages/login';
@@ -47,6 +48,7 @@ export function App() {
         dataProvider={dataProvider}
         authProvider={authProvider}
         routerProvider={routerBindings}
+        i18nProvider={i18nProvider}
         notificationProvider={useNotificationProvider}
         resources={[
           { name: 'dashboard', list: '/', meta: { label: 'Обзор', icon: <DashboardOutlined /> } },

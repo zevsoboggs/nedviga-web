@@ -11,7 +11,8 @@ import {
   useForm,
 } from '@refinedev/antd';
 import { useShow } from '@refinedev/core';
-import { Table, Space, Tag, Form, Input, InputNumber, Select, Row, Col, Descriptions } from 'antd';
+import { Avatar, Card, Table, Space, Tag, Form, Input, InputNumber, Select, Row, Col, Divider } from 'antd';
+import { PhoneOutlined, MailOutlined, WalletOutlined, ImportOutlined } from '@ant-design/icons';
 
 const fmt = (v?: number | null) => (v == null ? '—' : new Intl.NumberFormat('ru-RU').format(v) + ' ₸');
 const TYPE = [
@@ -33,7 +34,7 @@ const label = (arr: { value: string; label: string }[], v: string) => arr.find((
 export function ClientList() {
   const { tableProps } = useTable({ resource: 'clients', pagination: { mode: 'client', pageSize: 10 } });
   return (
-    <List headerButtons={<CreateButton>Добавить клиента</CreateButton>}>
+    <List breadcrumb={false} headerButtons={<CreateButton>Добавить клиента</CreateButton>}>
       <Table {...tableProps} rowKey="id">
         <Table.Column title="Имя" render={(_, r: any) => `${r.firstName} ${r.lastName ?? ''}`} />
         <Table.Column dataIndex="type" title="Тип" render={(v) => label(TYPE, v)} />
@@ -128,7 +129,7 @@ function Fields() {
 export function ClientCreate() {
   const { formProps, saveButtonProps } = useForm({ resource: 'clients', action: 'create' });
   return (
-    <Create saveButtonProps={saveButtonProps} title="Новый клиент">
+    <Create saveButtonProps={saveButtonProps} breadcrumb={false} title="Новый клиент">
       <Form {...formProps} layout="vertical">
         <Fields />
       </Form>
@@ -138,7 +139,7 @@ export function ClientCreate() {
 export function ClientEdit() {
   const { formProps, saveButtonProps } = useForm({ resource: 'clients', action: 'edit' });
   return (
-    <Edit saveButtonProps={saveButtonProps} title="Редактировать клиента">
+    <Edit saveButtonProps={saveButtonProps} breadcrumb={false} title="Редактировать клиента">
       <Form {...formProps} layout="vertical">
         <Fields />
       </Form>
@@ -148,17 +149,47 @@ export function ClientEdit() {
 export function ClientShow() {
   const { queryResult } = useShow();
   const r: any = queryResult?.data?.data;
+  const st = STATUS.find((x) => x.value === r?.status);
+  const name = `${r?.firstName ?? ''} ${r?.lastName ?? ''}`.trim();
+  const rows = [
+    { icon: <PhoneOutlined />, label: 'Телефон', value: r?.phone ?? '—' },
+    { icon: <MailOutlined />, label: 'Email', value: r?.email ?? '—' },
+    { icon: <ImportOutlined />, label: 'Источник', value: r?.source ?? '—' },
+    { icon: <WalletOutlined />, label: 'Бюджет', value: r?.budgetMin || r?.budgetMax ? `${fmt(r?.budgetMin)} — ${fmt(r?.budgetMax)}` : '—' },
+  ];
   return (
-    <Show isLoading={queryResult?.isLoading} title={`${r?.firstName ?? ''} ${r?.lastName ?? ''}`}>
-      <Descriptions bordered column={2}>
-        <Descriptions.Item label="Тип">{label(TYPE, r?.type)}</Descriptions.Item>
-        <Descriptions.Item label="Статус">{label(STATUS, r?.status)}</Descriptions.Item>
-        <Descriptions.Item label="Телефон">{r?.phone ?? '—'}</Descriptions.Item>
-        <Descriptions.Item label="Email">{r?.email ?? '—'}</Descriptions.Item>
-        <Descriptions.Item label="Бюджет">{fmt(r?.budgetMin)} — {fmt(r?.budgetMax)}</Descriptions.Item>
-        <Descriptions.Item label="Источник">{r?.source ?? '—'}</Descriptions.Item>
-        <Descriptions.Item label="Заметка" span={2}>{r?.note ?? '—'}</Descriptions.Item>
-      </Descriptions>
+    <Show breadcrumb={false} isLoading={queryResult?.isLoading} title={name}>
+      <Row gutter={16}>
+        <Col xs={24} md={8}>
+          <Card style={{ textAlign: 'center' }}>
+            <Avatar size={84} style={{ background: '#3B6EF2', fontSize: 32 }}>{r?.firstName?.[0]}</Avatar>
+            <div style={{ fontSize: 20, fontWeight: 800, marginTop: 12 }}>{name}</div>
+            <Space style={{ marginTop: 8 }} wrap>
+              <Tag color={st?.color}>{st?.label ?? r?.status}</Tag>
+              <Tag>{label(TYPE, r?.type)}</Tag>
+            </Space>
+          </Card>
+        </Col>
+        <Col xs={24} md={16}>
+          <Card title="Контакты и бюджет">
+            {rows.map((it, i) => (
+              <div key={it.label}>
+                <Row align="middle" style={{ padding: '10px 0' }}>
+                  <Col flex="34px" style={{ color: '#3B6EF2' }}>{it.icon}</Col>
+                  <Col flex="120px" style={{ color: '#98A5B8' }}>{it.label}</Col>
+                  <Col flex="auto" style={{ fontWeight: 600 }}>{it.value}</Col>
+                </Row>
+                {i < rows.length - 1 && <Divider style={{ margin: 0 }} />}
+              </div>
+            ))}
+          </Card>
+          {r?.note ? (
+            <Card title="Заметка" style={{ marginTop: 16 }}>
+              <div style={{ whiteSpace: 'pre-wrap', color: '#3f4a5c', lineHeight: 1.6 }}>{r.note}</div>
+            </Card>
+          ) : null}
+        </Col>
+      </Row>
     </Show>
   );
 }

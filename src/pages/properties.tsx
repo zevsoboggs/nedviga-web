@@ -13,8 +13,8 @@ import {
 } from '@refinedev/antd';
 import { useShow } from '@refinedev/core';
 import { useNavigate } from 'react-router-dom';
-import { App, Button, Table, Space, Tag, Form, Input, InputNumber, Modal, Segmented, Select, Row, Col, Descriptions, Image, Divider } from 'antd';
-import { DownloadOutlined, PlusOutlined, DeleteOutlined, ApartmentOutlined, FundProjectionScreenOutlined } from '@ant-design/icons';
+import { App, Button, Card, Table, Space, Tag, Form, Input, InputNumber, Modal, Segmented, Select, Row, Col, Image, Divider } from 'antd';
+import { DownloadOutlined, PlusOutlined, DeleteOutlined, ApartmentOutlined, FundProjectionScreenOutlined, EnvironmentOutlined, LinkOutlined } from '@ant-design/icons';
 import { apiFetch } from '../api';
 const fmt = (v?: number | null) => (v == null ? '—' : new Intl.NumberFormat('ru-RU').format(v) + ' ₸');
 
@@ -69,6 +69,7 @@ export function PropertyList() {
 
   return (
     <List
+      breadcrumb={false}
       headerButtons={
         <Space>
           <Button icon={<DownloadOutlined />} onClick={() => setImportOpen(true)}>Импорт с krisha.kz</Button>
@@ -197,7 +198,7 @@ function Fields() {
 export function PropertyCreate() {
   const { formProps, saveButtonProps } = useForm({ resource: 'properties', action: 'create' });
   return (
-    <Create saveButtonProps={saveButtonProps} title="Новый объект">
+    <Create saveButtonProps={saveButtonProps} breadcrumb={false} title="Новый объект">
       <Form {...formProps} layout="vertical">
         <Fields />
       </Form>
@@ -208,7 +209,7 @@ export function PropertyCreate() {
 export function PropertyEdit() {
   const { formProps, saveButtonProps } = useForm({ resource: 'properties', action: 'edit' });
   return (
-    <Edit saveButtonProps={saveButtonProps} title="Редактировать объект">
+    <Edit saveButtonProps={saveButtonProps} breadcrumb={false} title="Редактировать объект">
       <Form {...formProps} layout="vertical">
         <Fields />
       </Form>
@@ -222,6 +223,7 @@ export function PropertyShow() {
   const navigate = useNavigate();
   const r: any = queryResult?.data?.data;
   const [uploading, setUploading] = useState(false);
+  const [mainIdx, setMainIdx] = useState(0);
   const [dealOpen, setDealOpen] = useState(false);
   const [dealBusy, setDealBusy] = useState(false);
   const [dealForm] = Form.useForm();
@@ -277,8 +279,12 @@ export function PropertyShow() {
     queryResult?.refetch();
   };
 
+  const photos: string[] = r?.photos ?? [];
+  const st = STATUS.find((x) => x.value === r?.status);
+
   return (
     <Show
+      breadcrumb={false}
       isLoading={queryResult?.isLoading}
       title={r?.title}
       headerButtons={({ defaultButtons }) => (
@@ -309,44 +315,79 @@ export function PropertyShow() {
         </Form>
       </Modal>
 
-      <Space wrap style={{ marginBottom: 16 }}>
-        <Image.PreviewGroup>
-          {(r?.photos ?? []).map((u: string, i: number) => (
-            <div key={i} style={{ position: 'relative', display: 'inline-block' }}>
-              <Image src={u} width={160} height={120} style={{ objectFit: 'cover', borderRadius: 8 }} />
-              <Button
-                size="small"
-                danger
-                shape="circle"
-                icon={<DeleteOutlined />}
-                style={{ position: 'absolute', top: 4, right: 4 }}
-                onClick={() => removePhoto(i)}
-              />
-            </div>
-          ))}
-        </Image.PreviewGroup>
-        <Button
-          onClick={addPhotos}
-          loading={uploading}
-          icon={<PlusOutlined />}
-          style={{ width: 160, height: 120, borderStyle: 'dashed' }}
-        >
-          Фото
-        </Button>
-      </Space>
-      <Descriptions bordered column={2} size="middle">
-        <Descriptions.Item label="Цена">{fmt(r?.price)}</Descriptions.Item>
-        <Descriptions.Item label="Тип">{label(TYPE, r?.type)}</Descriptions.Item>
-        <Descriptions.Item label="Сделка">{label(DEAL, r?.dealKind)}</Descriptions.Item>
-        <Descriptions.Item label="Статус">{label(STATUS, r?.status)}</Descriptions.Item>
-        <Descriptions.Item label="Площадь">{r?.area ? r.area + ' м²' : '—'}</Descriptions.Item>
-        <Descriptions.Item label="Комнат">{r?.rooms ?? '—'}</Descriptions.Item>
-        <Descriptions.Item label="Этаж">{r?.floor ? `${r.floor}/${r.totalFloors ?? '?'}` : '—'}</Descriptions.Item>
-        <Descriptions.Item label="Город">{r?.city ?? '—'}</Descriptions.Item>
-        <Descriptions.Item label="Район">{r?.district ?? '—'}</Descriptions.Item>
-        <Descriptions.Item label="Адрес" span={2}>{r?.address ?? '—'}</Descriptions.Item>
-        <Descriptions.Item label="Описание" span={2}>{r?.description ?? '—'}</Descriptions.Item>
-      </Descriptions>
+      <Row gutter={16}>
+        {/* Галерея */}
+        <Col xs={24} lg={14}>
+          <Card bodyStyle={{ padding: 12 }}>
+            <Image.PreviewGroup>
+              {photos.length ? (
+                <Image src={photos[mainIdx] ?? photos[0]} style={{ width: '100%', height: 340, objectFit: 'cover', borderRadius: 12 }} />
+              ) : (
+                <div style={{ width: '100%', height: 340, borderRadius: 12, background: '#EEF3FB', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <ApartmentOutlined style={{ fontSize: 48, color: '#98A5B8' }} />
+                </div>
+              )}
+              <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+                {photos.map((u, i) => (
+                  <div key={i} style={{ position: 'relative' }}>
+                    <img
+                      src={u}
+                      onClick={() => setMainIdx(i)}
+                      style={{ width: 78, height: 58, objectFit: 'cover', borderRadius: 8, cursor: 'pointer', border: i === mainIdx ? '2px solid #3B6EF2' : '2px solid transparent' }}
+                    />
+                    <Button size="small" danger shape="circle" icon={<DeleteOutlined />} style={{ position: 'absolute', top: -6, right: -6, transform: 'scale(0.8)' }} onClick={() => removePhoto(i)} />
+                  </div>
+                ))}
+                <Button onClick={addPhotos} loading={uploading} icon={<PlusOutlined />} style={{ width: 78, height: 58, borderStyle: 'dashed' }} />
+              </div>
+            </Image.PreviewGroup>
+          </Card>
+        </Col>
+
+        {/* Цена + характеристики */}
+        <Col xs={24} lg={10}>
+          <Card>
+            <div style={{ fontSize: 32, fontWeight: 800, color: '#3B6EF2' }}>{fmt(r?.price)}</div>
+            <Space style={{ marginTop: 8 }} wrap>
+              <Tag color={st?.color}>{st?.label ?? r?.status}</Tag>
+              <Tag>{label(TYPE, r?.type)}</Tag>
+              <Tag>{label(DEAL, r?.dealKind)}</Tag>
+            </Space>
+            <Divider style={{ margin: '16px 0' }} />
+            <Row gutter={[12, 12]}>
+              {[
+                { label: 'Площадь', value: r?.area ? r.area + ' м²' : '—' },
+                { label: 'Комнат', value: r?.rooms ?? '—' },
+                { label: 'Этаж', value: r?.floor ? `${r.floor}/${r.totalFloors ?? '?'}` : '—' },
+                { label: 'Город', value: r?.city ?? '—' },
+                { label: 'Район', value: r?.district ?? '—' },
+                { label: 'Сделка', value: label(DEAL, r?.dealKind) },
+              ].map((it) => (
+                <Col span={8} key={it.label}>
+                  <div style={{ background: '#F6F8FC', borderRadius: 12, padding: '12px 10px', textAlign: 'center' }}>
+                    <div style={{ fontWeight: 800, fontSize: 15 }}>{it.value}</div>
+                    <div style={{ color: '#98A5B8', fontSize: 12, marginTop: 2 }}>{it.label}</div>
+                  </div>
+                </Col>
+              ))}
+            </Row>
+          </Card>
+        </Col>
+      </Row>
+
+      {r?.address ? (
+        <Card style={{ marginTop: 16 }} bodyStyle={{ padding: 16 }}>
+          <Space><EnvironmentOutlined style={{ color: '#3B6EF2' }} /> <b>Адрес:</b> {r.address}</Space>
+        </Card>
+      ) : null}
+      {r?.description ? (
+        <Card title="Описание" style={{ marginTop: 16 }}>
+          <div style={{ whiteSpace: 'pre-wrap', color: '#3f4a5c', lineHeight: 1.6 }}>{r.description}</div>
+        </Card>
+      ) : null}
+      {r?.externalUrl ? (
+        <Button type="link" href={r.externalUrl} target="_blank" icon={<LinkOutlined />} style={{ marginTop: 8, paddingLeft: 0 }}>Открыть на krisha.kz</Button>
+      ) : null}
     </Show>
   );
 }
